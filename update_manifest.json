@@ -1,0 +1,11 @@
+{
+    "latest": 102,
+    "versions": {
+        "101": {
+            "force": true,
+            "target": 102,
+            "url": "",
+            "hash": ""
+        }
+    }
+}
