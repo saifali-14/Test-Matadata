@@ -1,11 +1,1 @@
-{
-    "latest": 102,
-    "versions": {
-        "101": {
-            "force": true,
-            "target": 102,
-            "url": "https://github.com/saifali-14/Test-Matadata/releases/download/test/SafeNest_1.0_sign.apk",
-            "hash": ""
-        }
-    }
-}
+{"latest":102,"versions":{"101":{"force":true,"target":102,"url":"https://github.com/saifali-14/Test-Matadata/releases/download/test/SafeNest_1.0_sign.apk","hash":""}}}
