@@ -12,7 +12,6 @@
   var cm = html.match(/cluster_num['"]\]\s*=\s*['"](\d+)['"]/);
   if (cm) clusterNum = cm[1];
 
-  // Spoof the Referer to app_keys.htm (same-origin, so fetch allows it)
   fetch("/account_tangle/create_b2_application_key", {
     method: "POST",
     credentials: "same-origin",
